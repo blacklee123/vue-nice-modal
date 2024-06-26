@@ -1,5 +1,5 @@
 {
-  "name": "monorepo",
+  "name": "qaq-public",
   "scripts": {
     "changeset": "changeset",
     "preinstall": "npx only-allow pnpm",
