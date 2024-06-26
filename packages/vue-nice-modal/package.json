@@ -1,5 +1,5 @@
 {
-  "name": "vue-nice-modal",
+  "name": "@qaq-public/vue-nice-modal",
   "version": "1.1.1",
   "private": false,
   "description": "Utility library that converts Vue.js modal components into a Promise-based API",
@@ -10,18 +10,18 @@
     "modal",
     "vue-composition-api"
   ],
-  "homepage": "https://github.com/worldzhao/vue-nice-modal#readme",
+  "homepage": "https://github.com/blacklee123/vue-nice-modal#readme",
   "bugs": {
-    "url": "https://github.com/worldzhao/vue-nice-modal/issues"
+    "url": "https://github.com/blacklee123/vue-nice-modal/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/worldzhao/vue-nice-modal.git",
+    "url": "git+https://github.com/blacklee123/vue-nice-modal.git",
     "directory": "packages/vue-nice-modal"
   },
   "author": {
-    "name": "worldzhao",
-    "email": "1007326924@qq.com"
+    "name": "blacklee123",
+    "email": "15656564262@163.com"
   },
   "sideEffects": false,
   "main": "./dist/index.js",
