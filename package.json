@@ -10,7 +10,8 @@
     "*.{js,ts,css,md,jsx,tsx,vue,json}": "prettier . --write"
   },
   "dependencies": {
-    "@changesets/cli": "^2.26.2"
+    "@changesets/cli": "^2.26.2",
+    "vue-nice-modal": "workspace:*"
   },
   "devDependencies": {
     "husky": "^8.0.3",

@@ -1,4 +1,4 @@
-import { reactive } from 'vue-demi';
+import { reactive } from 'vue';
 
 import { extend } from './utils';
 import { useExpose } from './use-expose';

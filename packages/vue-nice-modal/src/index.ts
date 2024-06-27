@@ -5,8 +5,8 @@ import type {
   AllowedComponentProps,
   App,
   AppContext,
-} from 'vue-demi';
-import { h, isVue2, createApp, isVue3 } from 'vue-demi';
+} from 'vue';
+import { h, createApp } from 'vue';
 import { extend, inBrowser, noop } from './utils';
 import { useModalState } from './use-modal-state';
 
@@ -16,10 +16,8 @@ const DEFAULT_APP_KEY = 'default';
 function mountComponent(RootComponent: Component, appKey: string) {
   const app = createApp(RootComponent);
 
-  if (isVue3) {
-    const inheritContext = appContextMap[appKey];
-    inheritContext && extend(app._context, inheritContext);
-  }
+  const inheritContext = appContextMap[appKey];
+  inheritContext && extend(app._context, inheritContext);
 
   const root = document.createElement('div');
   const container = document.createElement('div');
@@ -45,18 +43,11 @@ function initInstance(
   const Wrapper = {
     setup() {
       const { state, toggle } = useModalState(options);
-      return () => {
-        if (isVue2) {
-          return h(Comp, {
-            on: { 'update:visible': toggle },
-            props: { ...state },
-          });
-        }
-        return h(Comp, {
+      return () =>
+        h(Comp, {
           ...state,
           'onUpdate:visible': toggle,
         });
-      };
     },
   };
 
