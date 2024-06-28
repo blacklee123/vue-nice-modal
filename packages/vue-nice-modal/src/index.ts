@@ -1,7 +1,7 @@
 import type { ComponentPublicInstance, Component, AppContext } from 'vue';
 import { h, createApp, getCurrentInstance } from 'vue';
 
-import { extend, inBrowser, noop } from './utils';
+import { inBrowser, noop } from './utils';
 import { useModalState } from './use-modal-state';
 import type {
   INiceModalHandlers,
@@ -47,6 +47,11 @@ function createVueInstance(
   };
 }
 
+type VueInstance = ComponentPublicInstance<{}, any> & {
+  open: (props?: Record<string, any>) => void;
+  toggle: (visible: boolean) => void;
+};
+
 export function create<C extends Component>(ModalComponent: C) {
   // 重新设置一遍provides，好像没有什么效果
   const parentAppContext = getCurrentInstance()?.appContext;
@@ -57,8 +62,7 @@ export function create<C extends Component>(ModalComponent: C) {
       ...currentProvides,
     });
   }
-
-  let vueInstance: ComponentPublicInstance<{}, any> | null = null;
+  let vueInstance: VueInstance | null = null;
   let remove = noop;
   let hide = noop;
 
@@ -92,7 +96,7 @@ export function create<C extends Component>(ModalComponent: C) {
           _modalProps,
           parentAppContext
         );
-        vueInstance = instance;
+        vueInstance = instance as VueInstance;
         remove = () => {
           vueInstance = null;
           destroyVueInstance();
@@ -104,7 +108,7 @@ export function create<C extends Component>(ModalComponent: C) {
         };
         vueInstance.open();
       } else {
-        vueInstance.open(extend({}, _modalProps));
+        vueInstance.open(modalProps);
       }
     });
   };

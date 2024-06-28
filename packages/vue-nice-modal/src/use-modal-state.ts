@@ -16,18 +16,15 @@ export function useModalState(initOptions: Record<string, unknown>) {
     state.visible = visible;
   };
 
-  const open = (options: Record<string, any>) => {
-    extend(state, options);
+  const open = (props?: Record<string, any>) => {
+    props && extend(state, props);
     toggle(true);
   };
 
-  const close = () => toggle(false);
-
-  useExpose({ open, close, toggle });
+  useExpose({ open, toggle });
 
   return {
     open,
-    close,
     state,
     toggle,
   };
