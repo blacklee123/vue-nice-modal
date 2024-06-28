@@ -1,132 +1,110 @@
-import type {
-  ComponentPublicInstance,
-  Component,
-  VNodeProps,
-  AllowedComponentProps,
-  App,
-  AppContext,
-} from 'vue';
-import { h, createApp } from 'vue';
+import type { ComponentPublicInstance, Component, AppContext } from 'vue';
+import { h, createApp, getCurrentInstance } from 'vue';
+
 import { extend, inBrowser, noop } from './utils';
 import { useModalState } from './use-modal-state';
+import type {
+  INiceModalHandlers,
+  ComponentProps,
+  ExtractOptions,
+  InferPayloadType,
+  Simplify,
+  RemoveReadonly,
+} from './types';
+export type { INiceModalHandlers } from './types';
 
-let appContextMap: Record<string, AppContext> = {};
-const DEFAULT_APP_KEY = 'default';
-
-function mountComponent(RootComponent: Component, appKey: string) {
-  const app = createApp(RootComponent);
-
-  const inheritContext = appContextMap[appKey];
-  inheritContext && extend(app._context, inheritContext);
-
-  const root = document.createElement('div');
-  const container = document.createElement('div');
-  root.className = 'vue-nice-modal-root';
-  root.appendChild(container);
-
-  document.body.appendChild(root);
-
-  return {
-    instance: app.mount(container),
-    unmount() {
-      app.unmount();
-      document.body.removeChild(root);
-    },
-  };
-}
-
-function initInstance(
-  Comp: any,
-  options: Record<string, unknown>,
-  appKey: string
+function createVueInstance(
+  ModalComponent: Component,
+  modalProps: Record<string, unknown>,
+  parentAppContext: AppContext | undefined
 ) {
-  const Wrapper = {
+  const App = {
     setup() {
-      const { state, toggle } = useModalState(options);
+      const { state, toggle } = useModalState(modalProps);
       return () =>
-        h(Comp, {
+        h(ModalComponent, {
           ...state,
           'onUpdate:visible': toggle,
         });
     },
   };
 
-  return mountComponent(Wrapper, appKey);
+  const app = createApp(App);
+  parentAppContext && Object.assign(app._context, parentAppContext);
+
+  const root = document.createElement('div');
+  const container = document.createElement('div');
+  root.className = 'vue-nice-modal-root';
+  root.appendChild(container);
+  document.body.appendChild(root);
+
+  return {
+    instance: app.mount(container),
+    destroyVueInstance() {
+      app.unmount();
+      document.body.removeChild(root);
+    },
+  };
 }
 
-export type INiceModalHandlers<T = any> = {
-  callback: (action: 'confirm' | 'cancel', payload?: T) => void;
-  remove: () => void;
-  hide: () => void;
-};
+export function create<C extends Component>(ModalComponent: C) {
+  // 重新设置一遍provides，好像没有什么效果
+  const parentAppContext = getCurrentInstance()?.appContext;
+  if (parentAppContext) {
+    const currentProvides = (getCurrentInstance() as any)?.provides;
+    Reflect.set(parentAppContext, 'provides', {
+      ...parentAppContext.provides,
+      ...currentProvides,
+    });
+  }
 
-type ComponentProps<C extends Component> = C extends new (...args: any) => any
-  ? Omit<
-      InstanceType<C>['$props'],
-      keyof VNodeProps | keyof AllowedComponentProps
-    >
-  : never;
-
-type ExtractOptions<T extends Record<string, any>> = Omit<
-  T,
-  keyof INiceModalHandlers | 'visible' | 'onUpdate:visible'
->;
-
-type InferPayloadType<T extends {}> = T extends {
-  readonly callback: (action: any, payload?: infer R) => void;
-}
-  ? R
-  : unknown;
-
-// 强制计算类型
-type Simplify<T> = T extends any ? { [P in keyof T]: T[P] } : never;
-
-type RemoveReadonly<T> = { -readonly [P in keyof T]: T[P] };
-
-export function create<C extends Component>(Comp: C, appKey = DEFAULT_APP_KEY) {
-  let instance: ComponentPublicInstance<{}, any> | null = null;
+  let vueInstance: ComponentPublicInstance<{}, any> | null = null;
   let remove = noop;
   let hide = noop;
 
   type Options = Simplify<RemoveReadonly<ExtractOptions<ComponentProps<C>>>>;
+
   const show = (
-    options: Options
+    modalProps: Options
   ): Promise<Simplify<InferPayloadType<ComponentProps<C>>>> => {
     if (!inBrowser) return Promise.reject();
 
-    return new Promise((resolve, reject) => {
+    return new Promise((_resolve, _reject) => {
       const handler: INiceModalHandlers = {
         callback: (action: 'confirm' | 'cancel', payload) => {
-          action === 'confirm' ? resolve(payload) : reject(payload);
+          action === 'confirm' ? _resolve(payload) : _reject(payload);
+        },
+        resolve: (payload) => {
+          _resolve(payload);
+        },
+        reject: (payload) => {
+          _reject(payload);
         },
         remove: () => remove(),
         hide: () => hide(),
       };
 
-      const _options = {
-        ...options,
-        ...handler,
-      };
+      const _modalProps = { ...modalProps, ...handler };
 
-      if (!instance) {
-        const { instance: _instance, unmount } = initInstance(
-          Comp,
-          _options,
-          appKey
+      if (!vueInstance) {
+        const { instance, destroyVueInstance } = createVueInstance(
+          ModalComponent,
+          _modalProps,
+          parentAppContext
         );
-        instance = _instance;
+        vueInstance = instance;
         remove = () => {
-          instance = null;
-          unmount();
+          vueInstance = null;
+          destroyVueInstance();
         };
         hide = () => {
-          if (instance) {
-            instance.toggle(false);
+          if (vueInstance) {
+            vueInstance.toggle(false);
           }
         };
-        instance.open();
+        vueInstance.open();
       } else {
-        instance.open(extend({}, _options));
+        vueInstance.open(extend({}, _modalProps));
       }
     });
   };
@@ -137,20 +115,3 @@ export function create<C extends Component>(Comp: C, appKey = DEFAULT_APP_KEY) {
     remove: () => remove(),
   };
 }
-
-export const VueNiceModalPluginForVue3 = {
-  install: (
-    app: App,
-    options: { appKey: string } = { appKey: DEFAULT_APP_KEY }
-  ) => {
-    if (
-      typeof appContextMap[options.appKey] !== 'undefined' &&
-      process.env.NODE_ENV === 'development'
-    ) {
-      console.warn(
-        `[Vue Nice Modal]: The current app <${options.appKey}> has registered the relevant context in Vue Nice Modal. Please confirm if you need to override it. If not, please provide a unique app key for registering the context and inject the key when calling the create method.`
-      );
-    }
-    appContextMap[options.appKey] = app._context;
-  },
-};

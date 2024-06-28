@@ -4,9 +4,7 @@ vue-nice-modal 是一个工具库,可以将 Vue.js 的 modal 组件转换为基�
 
 灵感来源于 [@ebay/nice-modal-react](https://github.com/eBay/nice-modal-react) 和 [vant](https://github.com/youzan/vant)。
 
-支持 Vue 2.x,通过 [vue-demi](https://github.com/vueuse/vue-demi)。
-
-[English](https://github.com/worldzhao/vue-nice-modal/blob/main/README.md) | 简体中文
+[English](https://github.com/blacklee123/vue-nice-modal/blob/main/README.md) | 简体中文
 
 ## Examples
 
@@ -118,34 +116,6 @@ hide()、remove() 和 callback() 方法也由 vue-nice-modal 注入到自定义 
 一旦您定义了自己的自定义 modal 组件,您可以使用 vue-nice-modal 提供的 create() 函数来创建一个 Modal 对象,该对象公开 show()、hide() 和 remove() 方法。然后,您可以使用 show() 方法显示自定义 modal 组件,并使用 vue-nice-modal 提供的基于 Promise 的 API 处理用户确认或取消 modal 操作。
 
 </details>
-
-### 使用插件共享应用上下文(Vue@^3 only)
-
-```javascript
-import { createApp } from 'vue';
-import { VueNiceModalPluginForVue3 } from 'vue-nice-modal';
-import App from './App.vue';
-
-const app = createApp(App);
-
-app.use(VueNiceModalPluginForVue3);
-
-app.mount('#app');
-```
-
-Vue Nice Modal 在内部创建了一个新的 Vue 应用程序实例，并将用户创建的组件挂载到该实例中。这使得它可以在模态框中正常运行，而不会与主应用程序的状态和逻辑发生冲突。
-
-然而，如果您需要在模态框中访问主应用程序中的数据或方法，您可以使用该插件实现共享上下文。
-
-> 你可以通过在插件选项中传递 appKey 的形式来区分多个应用程序，并在创建模态框实例时将其传递。
-
-```javascript
-app.use(VueNiceModalPluginForVue3, { appKey: 'another app key' });
-
-create(MyModal, 'another app key');
-```
-
-在调用 app.use() 时，通过将选项对象传递给插件来传递 app 的 key（例如，{ appKey: 'another app key' }）。然后，在创建模态框实例时，需要将 appKey 作为选项传递给 create() 方法（例如，create(MyModal, 'another app key')）。这样就可以在多个应用程序中确保每个模态框都可以访问正确的上下文。
 
 ## API
 

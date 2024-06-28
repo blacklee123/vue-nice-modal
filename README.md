@@ -4,9 +4,7 @@ vue-nice-modal is a utility library that converts Vue.js modal components into a
 
 Inspired By [@ebay/nice-modal-react](https://github.com/eBay/nice-modal-react) and [vant](https://github.com/youzan/vant).
 
-Support for Vue 2.x via [vue-demi](https://github.com/vueuse/vue-demi)
-
-English | [简体中文](https://github.com/worldzhao/vue-nice-modal/blob/main/README.zh-CN.md)
+English | [简体中文](https://github.com/blacklee123/vue-nice-modal/blob/main/README.zh-CN.md)
 
 ## Examples
 
@@ -118,32 +116,6 @@ The hide(), remove(), and callback() methods are also injected into the custom m
 Once you have defined your custom modal component, you can use the create() function provided by vue-nice-modal to create a Modal object that exposes the show(), hide(), and remove() methods. You can then use the show() method to display your custom modal component and handle the user's confirmation or cancellation of the modal using the Promise-based API provided by vue-nice-modal.
 
 </details>
-
-### Plugin for sharing context(Vue@^3 only)
-
-```javascript
-import { createApp } from 'vue';
-import { VueNiceModalPluginForVue3 } from 'vue-nice-modal';
-import App from './App.vue';
-
-const app = createApp(App);
-
-app.use(VueNiceModalPluginForVue3);
-
-app.mount('#app');
-```
-
-Vue Nice Modal creates a new Vue application instance internally and mounts the user-created component to that instance. This allows it to run properly inside a modal without conflicting with the state and logic of the main application.
-
-However, if you need to access data or methods from the main application inside the modal, you can use the plugin to achieve shared context.
-
-> you can differentiate between multiple applications by passing a appKey as an option in the plugin options and passing it when creating the modal instance.
-
-```javascript
-app.use(VueNiceModalPluginForVue3, { appKey: 'another app key' });
-
-create(MyModal, 'another app key');
-```
 
 ## API
 

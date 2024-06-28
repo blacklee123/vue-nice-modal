@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Dialog } from 'vant';
-import { INiceModalHandlers } from 'vue-nice-modal';
+import { INiceModalHandlers } from '@qaq-public/vue-nice-modal';
 // inject hide/remove/callback methods by vue-nice-modal
 interface IProps extends INiceModalHandlers<number> {
   visible: boolean;
